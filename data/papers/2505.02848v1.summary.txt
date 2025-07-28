@@ -1,0 +1,15 @@
+Here are 7 bullet points summarizing the scientific paper:
+
+• The paper discusses the importance of aligning large language models (LLMs) with healthcare stakeholders to ensure trustworthy AI integration in healthcare. This alignment is crucial to empower healthcare workflows effectively, safely, and responsibly.
+
+• The authors highlight the challenges of adopting LLMs in healthcare, including the need for domain-specific knowledge and the risk of hallucination phenomena when applying LLMs in healthcare.
+
+• To address these challenges, the authors propose various techniques for aligning human knowledge and LLMs, including pretraining LLMs with healthcare-specific training data, using instruction-based alignment, and incorporating human feedback into the training process.
+
+• The paper discusses the importance of human-in-the-loop efforts throughout the LLM development cycle, including data labeling and quality verification, instruction learning strategies, and post-training human feedback.
+
+• The authors highlight the potential applications of LLMs in healthcare, including clinical workflow, patient care, medical education, and healthcare payers, and provide examples of successful alignments between healthcare stakeholders and LLMs.
+
+• The paper also discusses the outlook for trustworthy human-LLM alignment in healthcare, including improving generalizability, developing cost-efficient alignment, mitigating hallucinations, and establishing regulatory frameworks.
+
+• The authors conclude that aligning LLMs with healthcare stakeholders requires a human-centered approach that incorporates human knowledge, values, and preferences into the development and deployment of LLMs in healthcare.

@@ -31,7 +31,7 @@ class PDFDownloaderAgent(BaseAgent):
                 downloaded_pdfs.append({
                     "title": title,
                     "url": url,
-                    "pdf_path": pdf_path
+                    "file_path": pdf_path
                 })
                 log_info(f"✅ Downloaded: {title}")
             except Exception as e:

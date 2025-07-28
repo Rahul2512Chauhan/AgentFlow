@@ -1,41 +1,37 @@
-# main.py
 from agents.search_agent.search_agent import SearchAgent
 from agents.pdf_downloader_agent.pdf_downloader_agent import PDFDownloaderAgent
+from agents.summariser_agent.summariser_agent import SummariserAgent
 from utils.logger import log_info
-from rich import print
+
 import sys
 
 def main():
-    log_info("SearchAgent initialized.")
+    query = sys.argv[1] if len(sys.argv) > 1 else "Large Language Models in Healthcare"
+    log_info("Starting pipeline...")
+
+    # Step 1: Search
     search_agent = SearchAgent()
+    search_results = search_agent.run({"query": query})
 
-    # Accept input from CLI
-    if len(sys.argv) > 1:
-        query = " ".join(sys.argv[1:])
-    else:
-        query = input("🔍 Enter your research query: ")
-
-    input_dict = {"query": query}
-    search_output = search_agent.run(input_dict)
-
-    print("\n[bold green]🔎 SearchAgent Output:[/bold green]")
-    for i, res in enumerate(search_output.get("results", []), 1):
-        print(f"\n[bold cyan]Result {i}[/bold cyan]")
-        print(f"[bold]Title:[/bold] {res['title']}")
-        print(f"[bold]URL:[/bold] {res['url']}")
-        print(f"[bold]Summary:[/bold] {res['summary'][:300]}...")
-
-    if not search_output["results"]:
-        print("[yellow]No results found or an error occurred.[/yellow]")
+    if not search_results.get("results"):
+        log_info("No results from SearchAgent.")
         return
 
-    # ✅ Pass results to PDFDownloaderAgent
-    downloader = PDFDownloaderAgent()
-    download_output = downloader.run(search_output)
+    # Step 2: Download PDFs (✅ FIX: pass correct key 'results')
+    pdf_agent = PDFDownloaderAgent()
+    pdfs = pdf_agent.run({"results": search_results["results"]})
 
-    print("\n[bold green]📄 Downloaded PDFs:[/bold green]")
-    for pdf in download_output.get("pdfs", []):
-        print(f"[bold cyan]{pdf['title']}[/bold cyan] — Saved at: {pdf['pdf_path']}")
+    if not pdfs.get("pdfs"):
+        log_info("No PDFs downloaded. Exiting.")
+        return
+
+    # Step 3: Summarise PDFs
+    summariser = SummariserAgent()
+    summaries = summariser.run(pdfs)
+
+    log_info("✅ Pipeline complete!")
+    for i, summary in enumerate(summaries["summaries"], 1):
+        print(f"\n📄 Summary {i}: {summary['title']}\n{summary['summary']}\n")
 
 if __name__ == "__main__":
     main()
