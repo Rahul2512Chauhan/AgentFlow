@@ -1,37 +1,39 @@
+import sys
 from agents.search_agent.search_agent import SearchAgent
 from agents.pdf_downloader_agent.pdf_downloader_agent import PDFDownloaderAgent
 from agents.summariser_agent.summariser_agent import SummariserAgent
+from agents.writer_agent.writer_agent import WriterAgent
 from utils.logger import log_info
 
-import sys
-
-def main():
-    query = sys.argv[1] if len(sys.argv) > 1 else "Large Language Models in Healthcare"
+def main(query: str):
     log_info("Starting pipeline...")
 
-    # Step 1: Search
+    # 1. Search relevant papers
     search_agent = SearchAgent()
-    search_results = search_agent.run({"query": query})
+    search_output = search_agent.run({"query": query})
 
-    if not search_results.get("results"):
-        log_info("No results from SearchAgent.")
-        return
+    # 2. Download PDFs
+    pdf_downloader = PDFDownloaderAgent()
+    pdf_output = pdf_downloader.run(search_output)
 
-    # Step 2: Download PDFs (✅ FIX: pass correct key 'results')
-    pdf_agent = PDFDownloaderAgent()
-    pdfs = pdf_agent.run({"results": search_results["results"]})
-
-    if not pdfs.get("pdfs"):
-        log_info("No PDFs downloaded. Exiting.")
-        return
-
-    # Step 3: Summarise PDFs
+    # 3. Summarise PDFs
     summariser = SummariserAgent()
-    summaries = summariser.run(pdfs)
+    summary_output = summariser.run(pdf_output)
 
+    # 4. Compile summaries into final report
+    writer = WriterAgent()
+    report_output = writer.run(summary_output)
+
+    # ✅ Done
     log_info("✅ Pipeline complete!")
-    for i, summary in enumerate(summaries["summaries"], 1):
-        print(f"\n📄 Summary {i}: {summary['title']}\n{summary['summary']}\n")
+    if report_output.get("report_path"):
+        log_info(f"📄 Final report saved at: {report_output['report_path']}")
+
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) < 2:
+        print("Usage: python main.py '<your-query>'")
+        sys.exit(1)
+
+    query = sys.argv[1]
+    main(query)
