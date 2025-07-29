@@ -1,11 +1,14 @@
+# agents/summariser_agent/tools.py
+
 import os
 import textwrap
-from openai import OpenAI
 from dotenv import load_dotenv
-from utils.logger import log_info, log_error
+from openai import OpenAI
 from PyPDF2 import PdfReader
+from utils.logger import log_info, log_error
 
-# ✅ Load .env variables
+
+# ✅ Load environment variables
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
@@ -18,19 +21,18 @@ client = OpenAI(
     base_url="https://api.groq.com/openai/v1"
 )
 
-# ✅ Choose Groq model
-MODEL_NAME = "llama3-8b-8192"  # Try also: llama3-70b, gemma-7b
+MODEL_NAME = "llama3-8b-8192"  # Other options: llama3-70b, gemma-7b
 
-# ✅ Summarisation Function
+# ✅ Summarise text using Groq LLM
 def summarise_text(text: str) -> str:
-    if not text or not isinstance(text, str):
-        log_error("Invalid input: Text must be a non-empty string.")
+    if not text.strip():
+        log_error("Invalid input: Empty text")
         return ""
 
-    prompt = f"""Summarize the following scientific paper content in 5–7 bullet points:\n\n{textwrap.shorten(text, width=12000, placeholder="...")}"""
+    prompt = f"""Summarize the following scientific paper in 5–7 bullet points:\n\n{textwrap.shorten(text, width=12000, placeholder="...")}"""
 
     try:
-        log_info(f"[Summariser] Requesting summary from Groq (model={MODEL_NAME})...")
+        log_info("[Summariser] Requesting summary from Groq...")
         response = client.chat.completions.create(
             model=MODEL_NAME,
             messages=[
@@ -41,18 +43,14 @@ def summarise_text(text: str) -> str:
             max_tokens=512,
         )
         summary = response.choices[0].message.content
-        log_info("[Summariser] ✅ Summary received from Groq.")
-        return summary.strip()  # type: ignore
-
+        log_info("[Summariser] ✅ Received summary from Groq.")
+        return summary.strip() if summary else ""
     except Exception as e:
         log_error(f"[Summariser] ❌ Groq request failed: {e}")
         return ""
 
-# ✅ PDF Text Extraction Function
+# ✅ Extract raw text from PDF
 def extract_text_from_pdf(pdf_path: str) -> str:
-    """
-    Extracts text from a PDF file using PyPDF2.
-    """
     try:
         reader = PdfReader(pdf_path)
         text = ""
@@ -60,7 +58,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
             page_text = page.extract_text()
             if page_text:
                 text += page_text
-        return text
+        return text.strip()
     except Exception as e:
-        log_error(f"[ExtractText] ❌ Failed to read PDF: {e}")
+        log_error(f"[ExtractText] ❌ PDF read failed: {e}")
         return ""

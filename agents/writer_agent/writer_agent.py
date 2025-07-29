@@ -1,17 +1,20 @@
 import os
 from datetime import datetime
+from typing import Dict, Any, List
 
 from agents.base import BaseAgent
-from utils.logger import log_error , log_info , log_warn
+from utils.logger import log_error, log_info, log_warn
+
 
 class WriterAgent(BaseAgent):
-    def __init__(self):
+    def __init__(self, task_id: str):
+        super().__init__(task_id=task_id, tool_names=[])
         self.output_dir = "data/reports"
         os.makedirs(self.output_dir, exist_ok=True)
         log_info("WriterAgent initialized.")
 
-    def run(self, input_dict: dict)-> dict:
-        summaries = input_dict.get("summaries", [])
+    def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
+        summaries: List[Dict[str, Any]] = input.get("summaries", [])
         if not summaries:
             log_warn("[Writer] No summaries found in input.")
             return {"report": "", "report_path": None}
@@ -19,7 +22,7 @@ class WriterAgent(BaseAgent):
         log_info(f"[Writer] Generating report for {len(summaries)} summaries...")
 
         date_str = datetime.now().strftime("%Y-%m-%d")
-        report_lines = []
+        report_lines: List[str] = []
 
         # Header
         report_lines.append("📘 Multi-Paper Summary Report")
@@ -58,8 +61,3 @@ class WriterAgent(BaseAgent):
             "report": final_report,
             "report_path": report_path
         }
-
-
-
-
-
