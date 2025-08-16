@@ -1,52 +1,46 @@
-import arxiv
-from typing import List , Dict
-from utils.logger import log_error , log_info
+import requests
+import xml.etree.ElementTree as ET
+from typing import List, Dict
+from utils.logger import log_error, log_info, log_warn
 
-def search_papers(query: str ,max_results: int = 5) -> List[Dict]:
+ARXIV_API_URL = "http://export.arxiv.org/api/query"
+
+def search_papers(query: str, max_results: int = 5) -> List[Dict]:
     """
-    Search arXiv papers using the official API.
-
-    Args:
-        query (str): The search query, e.g. "Graph Neural Networks in healthcare".
-        max_results (int): Number of top results to return.
-
-    Returns:
-        List[Dict]: A list of search results with title, summary, and URL.
+    Search arXiv using their API.
     """
-
-    log_info(f"Searching arXiv for query: '{query}' (Top {max_results})")
+    params = {
+        "search_query": query,
+        "start": 0,
+        "max_results": max_results,
+    }
 
     try:
-        #create the arxiv query
-        search = arxiv.Search(
-            query=query,
-            max_results=max_results,
-            sort_by=arxiv.SortCriterion.Relevance,
-            sort_order=arxiv.SortOrder.Descending
-        )
+        response = requests.get(ARXIV_API_URL, params=params, timeout=10)
+        if response.status_code != 200:
+            log_warn(f"[arXiv] API request failed with {response.status_code}")
+            return []
 
-        results=[]        
-        for result in search.results():
-            paper = {
-                "title": result.title.strip(),
-                "summary": result.summary.strip(),
-                "url": result.entry_id,  # Link to abstract
-                "pdf_url": result.pdf_url,
-                "authors": [author.name for author in result.authors],
-                "published": result.published.strftime("%Y-%m-%d") 
-            }
+        root = ET.fromstring(response.text)
+        ns = {"atom": "http://www.w3.org/2005/Atom"}
 
-            results.append(paper)
+        papers = []
+        for entry in root.findall("atom:entry", ns):
+            paper_id = entry.find("atom:id", ns).text
+            title = entry.find("atom:title", ns).text.strip()
+            summary = entry.find("atom:summary", ns).text.strip()
+            url = paper_id
 
-        log_info(f"Found {len(results)} result(s) from arXiv")
-        return results
-    
+            papers.append({
+                "arxiv_id": paper_id.split("/")[-1],
+                "title": title,
+                "summary": summary,
+                "url": url,
+            })
+
+        log_info(f"[arXiv] Found {len(papers)} papers for query='{query}'")
+        return papers
+
     except Exception as e:
-        log_error(f"Error during arXiv search: {e}")
+        log_error(f"[arXiv] Error while searching: {e}")
         return []
-
-
-if __name__ == "__main__":
-    results = search_papers("LLMs in education", max_results=3)
-    for r in results:
-        print(r["title"], "→", r["url"])

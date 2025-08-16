@@ -1,8 +1,13 @@
-# tools/web_search.py
 from .base import BaseTool
-import random
+from agents.search_agent.tools import search_papers
+from utils.logger import log_info, log_error
+
 
 class WebSearchTool(BaseTool):
+    """
+    Tool for searching research papers from arXiv.
+    """
+
     def __init__(self, name: str = "web_search"):
         super().__init__(name)
 
@@ -10,22 +15,18 @@ class WebSearchTool(BaseTool):
         query = input.get("query")
         if not query:
             return {"error": "Missing 'query' in input"}
-        return self._stub_search(query)
 
-    def _stub_search(self, query: str) -> dict:
-        fake_titles = [
-            "Improving LLM Summarization with Graph Agents",
-            "A Survey on Autonomous Language Agents",
-            "Multi-agent Planning using Transformers",
-            "Memory-Augmented LLMs for Scientific Papers",
-            "Retrieval-Augmented Generation with Multi-Tool Systems"
-        ]
-        selected_title = random.choice(fake_titles)
-        fake_arxiv_id = f"2407.{random.randint(10000,99999)}"
-        return {
-            "query": query,
-            "title": selected_title,
-            "arxiv_id": fake_arxiv_id,
-            "url": f"https://arxiv.org/abs/{fake_arxiv_id}",
-            "source": "stub"
-        }
+        try:
+            log_info(f"[WebSearchTool] 🔎 Running web search for query='{query}'...")
+            results = search_papers(query, max_results=5)
+
+            if not results:
+                log_info(f"[WebSearchTool] ⚠️ No results found for query='{query}'")
+                return {"results": []}
+
+            log_info(f"[WebSearchTool] ✅ Retrieved {len(results)} results")
+            return {"results": results}
+
+        except Exception as e:
+            log_error(f"[WebSearchTool] ❌ Error during web search: {e}")
+            return {"error": str(e)}

@@ -1,3 +1,17 @@
-rich
-python-dotenv
+arxiv==2.1.0
+requests>=2.31.0
+tenacity>=8.2.3
 
+# LLM client (Groq via OpenAI SDK)
+openai>=1.30.0
+langchain-groq
+
+python-dotenv>=1.0.1
+rich>=13.7.1
+
+# PDF
+PyPDF2>=3.0.1
+pymupdf>=1.24.4
+
+# Typing/backports (optional but handy)
+typing-extensions>=4.12.2

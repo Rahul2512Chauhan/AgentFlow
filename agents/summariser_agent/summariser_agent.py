@@ -6,8 +6,8 @@ from typing import Dict, List, Any
 
 
 class SummariserAgent(BaseAgent):
-    def __init__(self, task_id: str):
-        super().__init__(task_id=task_id, tool_names=[])
+    def __init__(self, task_id: str | None = None):
+        super().__init__(name="SummariserAgent",task_id=task_id, tool_names=[])
         log_info("SummariserAgent initialized.")
 
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
@@ -38,15 +38,14 @@ class SummariserAgent(BaseAgent):
                 if not summary:
                     log_warn(f"[{i}] Empty summary for: {title}")
                     continue
-
                 summary_path = os.path.splitext(file_path)[0] + ".summary.txt"
+
                 try:
                     with open(summary_path, "w", encoding="utf-8") as f:
                         f.write(summary)
                     log_info(f"[{i}] ✅ Summary saved to: {summary_path}")
                 except Exception as file_error:
                     log_warn(f"[{i}] ⚠️ Could not save summary: {file_error}")
-
                 pdf["summary"] = summary
                 pdf["summary_path"] = summary_path
                 summaries.append(pdf)

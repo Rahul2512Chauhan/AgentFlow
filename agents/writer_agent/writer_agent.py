@@ -1,14 +1,12 @@
 import os
 from datetime import datetime
 from typing import Dict, Any, List
-
 from agents.base import BaseAgent
 from utils.logger import log_error, log_info, log_warn
 
-
 class WriterAgent(BaseAgent):
-    def __init__(self, task_id: str):
-        super().__init__(task_id=task_id, tool_names=[])
+    def __init__(self, task_id: str | None = None):
+        super().__init__(name="WriterAgent" , task_id=task_id, tool_names=[])
         self.output_dir = "data/reports"
         os.makedirs(self.output_dir, exist_ok=True)
         log_info("WriterAgent initialized.")
@@ -49,6 +47,7 @@ class WriterAgent(BaseAgent):
 
         # Save report
         report_path = os.path.join(self.output_dir, f"{date_str}_report.txt")
+        
         try:
             with open(report_path, "w", encoding="utf-8") as f:
                 f.write(final_report)

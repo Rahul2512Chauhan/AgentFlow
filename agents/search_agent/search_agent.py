@@ -1,46 +1,30 @@
 from agents.base import BaseAgent
-from utils.logger import log_info, log_error
-from typing import Dict
-from agents.search_agent import tools  # We’ll add the actual tool function later
+from .tools import search_papers
+from utils.logger import log_info, log_warn, log_error
+
 
 class SearchAgent(BaseAgent):
-    """Agent that searches research papers based on a query."""
+    """
+    Agent responsible for searching research papers on arXiv.
+    """
 
-    def __init__(self):
-        super().__init__(name="SearchAgent")
-
-    def run(self, input_dict: Dict) -> Dict:
-        """
-        Accepts a dictionary with a 'query' key and returns search results.
-        """
-        query = input_dict.get("query", "").strip()
-
+    def run(self, input: dict) -> dict:
+        query = input.get("query")
         if not query:
-            log_error("SearchAgent received empty or missing 'query'")
-            return {
-                "agent": self.name,
-                "query": None,
-                "results": [],
-                "error": "Missing or empty 'query'"
-            }
-
-        log_info(f"{self.name} received query: {query}")
+            log_error("[SearchAgent] ❌ Missing 'query' in input")
+            return {"error": "Missing 'query'"}
 
         try:
-            # Placeholder call — we'll define this in tools.py
-            results = tools.search_papers(query)
+            log_info(f"[SearchAgent] 🔎 Searching arXiv for query='{query}'...")
+            papers = search_papers(query, max_results=5)
 
-            return {
-                "agent": self.name,
-                "query": query,
-                "results": results
-            }
+            if not papers:
+                log_warn(f"[SearchAgent] ⚠️ No results found for query='{query}'")
+                return {"papers": []}
+
+            log_info(f"[SearchAgent] ✅ Retrieved {len(papers)} papers")
+            return {"papers": papers}
 
         except Exception as e:
-            log_error(f"{self.name} failed to fetch results: {e}")
-            return {
-                "agent": self.name,
-                "query": query,
-                "results": [],
-                "error": str(e)
-            }
+            log_error(f"[SearchAgent] ❌ Error while searching arXiv: {e}")
+            return {"error": str(e)}

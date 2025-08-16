@@ -1,29 +1,22 @@
-# agents/summariser_agent/tools.py
-
 import os
 import textwrap
-from dotenv import load_dotenv
-from openai import OpenAI
+from groq import Groq
 from PyPDF2 import PdfReader
 from utils.logger import log_info, log_error
+from config.config import GROQ_API_KEY
 
-
-# ✅ Load environment variables
-load_dotenv()
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 if not GROQ_API_KEY:
     raise EnvironmentError("❌ GROQ_API_KEY not found in .env")
 
-# ✅ Setup Groq client
-client = OpenAI(
+# Setup Groq client
+client = Groq(
     api_key=GROQ_API_KEY,
-    base_url="https://api.groq.com/openai/v1"
 )
 
-MODEL_NAME = "llama3-8b-8192"  # Other options: llama3-70b, gemma-7b
+MODEL_NAME = "llama3-70b-8192"  
 
-# ✅ Summarise text using Groq LLM
+# Summarise text using Groq LLM
 def summarise_text(text: str) -> str:
     if not text.strip():
         log_error("Invalid input: Empty text")
@@ -43,13 +36,13 @@ def summarise_text(text: str) -> str:
             max_tokens=512,
         )
         summary = response.choices[0].message.content
-        log_info("[Summariser] ✅ Received summary from Groq.")
+        log_info("[Summariser] Received summary from Groq.")
         return summary.strip() if summary else ""
     except Exception as e:
         log_error(f"[Summariser] ❌ Groq request failed: {e}")
         return ""
 
-# ✅ Extract raw text from PDF
+# Extract raw text from PDF
 def extract_text_from_pdf(pdf_path: str) -> str:
     try:
         reader = PdfReader(pdf_path)
