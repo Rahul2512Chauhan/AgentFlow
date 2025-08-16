@@ -7,7 +7,7 @@ from utils.logger import log_info , log_warn
 
 def main(query: str):
     task_id = str(uuid.uuid4())
-    log_info("Starting pipeline...(task_id={task_id})")
+    log_info(f"Starting pipeline...(task_id={task_id})")
 
     # 1. Search relevant papers
     search_agent = SearchAgent(task_id=task_id)
@@ -16,6 +16,7 @@ def main(query: str):
     if not results:
         log_warn("No search results, Exiting early")
         return
+    results = results[:3] # limit to top 3 paper
 
 
     # 2. Download PDFs
@@ -24,6 +25,7 @@ def main(query: str):
     pdfs = pdf_output.get("pdfs", [])
     if not pdfs:
         log_warn("No PDFs downloaded. Exiting early")
+        return
 
 
     # 3. Summarise PDFs
@@ -41,9 +43,9 @@ def main(query: str):
 
 
     #  Done
-    log_info("✅ Pipeline complete!")
+    log_info("Pipeline complete!")
     if report_output.get("report_path"):
-        log_info(f"📄 Final report saved at: {report_output['report_path']}")
+        log_info(f" Final report saved at: {report_output['report_path']}")
 
 
 if __name__ == "__main__":
