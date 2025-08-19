@@ -1,0 +1,13 @@
+task: "Summarise 3 papers on Graph Transformers"
+num_papers: 3
+workflow:
+  - agent: SearchAgent
+    params:
+      query: "graph transformers"
+      max_results: 3
+  - agent: PDFDownloaderAgent
+    params: {}
+  - agent: SummariserAgent
+    params: {}
+  - agent: WriterAgent
+    params: {}

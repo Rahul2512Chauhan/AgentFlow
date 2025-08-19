@@ -52,6 +52,7 @@ class WriterAgent(BaseAgent):
             with open(report_path, "w", encoding="utf-8") as f:
                 f.write(final_report)
             log_info(f"[Writer] ✅ Report saved to: {report_path}")
+        
         except Exception as e:
             log_error(f"[Writer] ❌ Failed to save report — {e}")
             report_path = None
